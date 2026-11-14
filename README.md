@@ -270,25 +270,19 @@ Note: Claude Code also drafted `criteria.md` and the three label texts at my req
 
 ## Rate Limiting
 
-**My limits:** ___ per minute, ___ per day
+**My limits:** 5 per minute, 60 per day (`config.py`: `RATE_LIMIT_PER_MINUTE`, `RATE_LIMIT_PER_DAY`), on `POST /submit`.
 
-**Why those numbers and not others:**
-<!-- Think about two people: a real writer submitting their own work a few
-     times an hour, and a script sending a thousand variations to map your
-     thresholds. Your numbers have to be liveable for the first and hostile to
-     the second. -->
+**Why those numbers and not others:** a real writer submits a draft, reads the label, maybe revises and submits again, so 5 in a minute is more than a person does by hand. 60 a day is several full writing sessions. A script mapping my thresholds with a thousand variations would hit the minute cap after 5 requests and the day cap after 60, which is about 6% of one thousand-request probe per day per identity. I did not pick the starter's 10 and 200 because each submission loads text into GPT-2, and I'd rather make a legitimate writer wait a minute once than let one caller burn CPU.
 
-**What a caller counts as:** <!-- per address, or per creator_id? They fail
-differently — one script can look like a thousand callers, and one household
-can look like one. -->
+**What a caller counts as:** the `creator_id` in the body, falling back to the caller's address when the body has no usable `creator_id` (`app.py::rate_limit_key`). That fails in one direction: a script can rotate `creator_id` values to dodge the limit, so this stops a careless caller, not a determined one. I haven't tested rotation.
 
 **The run of status codes when I pushed past it:**
 
-<!-- python run_attacks.py --flood 15 -->
-
+```
+200 200 200 200 200 429 429 429 429 429 429 429 429 429 429
 ```
 
-```
+(`python run_attacks.py --flood 15`; full output in `results/flood_2026-11-14_1734.md`. The log recorded the 10 rejections as `{"event": "rejected", "reason": "rate_limited", "limit": "5 per 1 minute"}`.)
 
 ---
 
@@ -316,40 +310,132 @@ whose work got caught by it:
 
 ## Run Log and Verdicts
 
-<!-- Your five criteria across three trials. `run_eval.py --label before`. -->
+Run before any change to the service, three trials each (`run_eval.py --label before` for criteria 2 and 3, `run_checks.py --label before` for 4 and 5). Criteria are quoted from `criteria.md`.
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |
+| 1. My own writing flagged as AI | at most 1 of 10 | not run | not run | not run | NOT RUN |
+| 2. Plain human writing flagged as AI | at most 1 of 5, and at least 3 of 5 "unsure" or "human" | 4/5 flagged AI | 4/5 flagged AI | 4/5 flagged AI | MISSED |
+| 3. AI and human score apart | gap of at least 0.30, and at least 4 of 5 AI above 0.50 | gap 0.52, 5/5 | gap 0.52, 5/5 | gap 0.52, 5/5 | MET |
+| 4. Appeals change status and are logged | 10/10 valid, 5/5 unknown get 404 | 10/10, 5/5 | 10/10, 5/5 | 10/10, 5/5 | MET |
+| 5. Bad input never crashes | 6/6 are 4xx JSON with a log entry | 6/6 | 6/6 | 6/6 | MET |
 
-**Real output from one trial**, pasted as text, naming the file and function
-that produced it:
+All three trials were identical for every criterion, which is expected: GPT-2 and the style measures are deterministic.
+
+**Criterion 1 is not run.** It needs ten pieces the author actually wrote, and none were supplied. It is a gap in this run log, not a pass.
+
+**Criterion 2 verdict, MISSED.** Run 1 gave combined scores 0.668, 0.793, 0.827, 0.860 and 0.739 against the 0.72 AI threshold, so 4 of 5 crossed it; runs 2 and 3 were identical. Only 1 of 5 landed in "unsure" and none in "human", so both halves of the target fail. This is not a close call.
+
+**Criterion 3 verdict, MET.** AI group mean combined score 0.800 (0.766, 0.834, 0.784, 0.789, 0.827), human group mean 0.279 (0.316, 0.163, 0.216, 0.369, 0.332). Gap 0.52 against a target of 0.30, and 5 of 5 AI pieces above 0.50. The target was probably too easy: my "clearly AI" pieces are all stock-phrase essays ("It is important to note...") that GPT-2 finds trivially predictable, so this says the signals can tell obvious cases apart, not that they separate hard ones.
+
+**Criteria 4 and 5 verdicts, MET.** Both are deterministic and clean in all three trials. They are also the easiest targets I set.
+
+**Real output, criterion 4** (`app.py::appeal`, trial 1, a valid then an unknown id):
 
 ```json
-
+[
+  {
+    "status_code": 200,
+    "body": {
+      "content_id": "36108657c48c",
+      "message": "Thank you. Your appeal has been recorded and a person will review it. Until then, this result is marked as under review.",
+      "status": "under_review"
+    }
+  },
+  {
+    "status_code": 404,
+    "body": {
+      "error": "unknown_content_id",
+      "message": "No submission with content_id 'nopedc073d'. Check the id and try again."
+    }
+  }
+]
 ```
 
-**Diagnoses**
+**Real output, criterion 5** (`app.py::submit` and `_reject`, trial 1, the six bad inputs):
 
-<!-- For each miss AND each broken attack: the stage and the mechanism.
+```json
+[
+  {
+    "case": "missing text",
+    "status_code": 400,
+    "json_error": true,
+    "logged_rejection": true,
+    "pass": true,
+    "body": {
+      "error": "missing_text",
+      "message": "text is required and must be a non-empty string."
+    }
+  },
+  {
+    "case": "empty text",
+    "status_code": 400,
+    "json_error": true,
+    "logged_rejection": true,
+    "pass": true,
+    "body": {
+      "error": "missing_text",
+      "message": "text is required and must be a non-empty string."
+    }
+  },
+  {
+    "case": "whitespace text",
+    "status_code": 400,
+    "json_error": true,
+    "logged_rejection": true,
+    "pass": true,
+    "body": {
+      "error": "missing_text",
+      "message": "text is required and must be a non-empty string."
+    }
+  },
+  {
+    "case": "missing creator_id",
+    "status_code": 400,
+    "json_error": true,
+    "logged_rejection": true,
+    "pass": true,
+    "body": {
+      "error": "missing_creator_id",
+      "message": "creator_id is required and must be a non-empty string."
+    }
+  },
+  {
+    "case": "body is a list",
+    "status_code": 400,
+    "json_error": true,
+    "logged_rejection": true,
+    "pass": true,
+    "body": {
+      "error": "invalid_json",
+      "message": "Send a JSON object with text and creator_id."
+    }
+  },
+  {
+    "case": "50,000 chars",
+    "status_code": 413,
+    "json_error": true,
+    "logged_rejection": true,
+    "pass": true,
+    "body": {
+      "error": "text_too_long",
+      "message": "text is over 20000 characters. Send a shorter piece."
+    }
+  }
+]
+```
 
-     Your service has five stages: the route, signal one, signal two, the
-     combining rule, and the label mapping.
+**Real output, criterion 2** (`app.py::submit`, trial 1; the full JSON for all trials is in `results/run_2026-11-14_1735_before.md`): model_score / style_score / combined for the five plain pieces were 0.791 / 0.484 / 0.668 (unsure), 0.877 / 0.667 / 0.793, 0.851 / 0.792 / 0.827, 0.836 / 0.895 / 0.860 and 0.776 / 0.683 / 0.739 (all AI).
 
-     Not a diagnosis:  "The evasion attacks got through."
-     A diagnosis:      "Four evasion inputs got through. All four had typos
-                        added to AI-generated text. My second signal measures
-                        word variety, and typos raise word variety — so it read
-                        them as more human. My combining rule weights that
-                        signal at 0.6, so it dragged the whole score down."
+**Diagnosis of criterion 2.** The stage is signal one first and signal two second, and they fail together, which is why the combining rule can't save it.
+- *Signal one:* GPT-2 gave these pieces 0.78 to 0.88. Their short sentences and common words are exactly what a language model finds predictable, so predictability reads as machine-written. This is the blind spot I named in the README before running anything.
+- *Signal two:* it scored the same pieces 0.48 to 0.90. Pieces 3 to 5 have very even sentence lengths (a coefficient of variation near 0.2), which the sentence-spread measure treats as AI-like, and that measure carries half the style weight.
+- *Combining rule:* my disagreement rule pulls the score toward the lower signal only when they differ by more than 0.4. Here they agree, both high, so the rule never fires and the average goes straight over 0.72. The rule protects against one noisy signal, not two wrong ones.
+- *Pattern:* one cause, not five. Both signals measure "plainness" and call it "machine".
 
-     Look for a pattern. Five failures on one signal is one problem, not five. -->
+The raising of `AI_THRESHOLD` to 0.72 in unit 7 was a patch for one paragraph; this run shows it was not enough.
 
-
+**Attack set verdicts:** pending. The attack set had not been supplied when this was written, so the attack run and the improvement have not happened.
 
 ---
 

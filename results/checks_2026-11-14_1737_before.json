@@ -1,0 +1,282 @@
+{
+  "criterion_4": [
+    {
+      "valid_ok": "10/10",
+      "unknown_ok": "5/5",
+      "samples": [
+        {
+          "status_code": 200,
+          "body": {
+            "content_id": "36108657c48c",
+            "message": "Thank you. Your appeal has been recorded and a person will review it. Until then, this result is marked as under review.",
+            "status": "under_review"
+          }
+        },
+        {
+          "status_code": 404,
+          "body": {
+            "error": "unknown_content_id",
+            "message": "No submission with content_id 'nopedc073d'. Check the id and try again."
+          }
+        }
+      ]
+    },
+    {
+      "valid_ok": "10/10",
+      "unknown_ok": "5/5",
+      "samples": [
+        {
+          "status_code": 200,
+          "body": {
+            "content_id": "b9b96c2fbc80",
+            "message": "Thank you. Your appeal has been recorded and a person will review it. Until then, this result is marked as under review.",
+            "status": "under_review"
+          }
+        },
+        {
+          "status_code": 404,
+          "body": {
+            "error": "unknown_content_id",
+            "message": "No submission with content_id 'nopefe43a0'. Check the id and try again."
+          }
+        }
+      ]
+    },
+    {
+      "valid_ok": "10/10",
+      "unknown_ok": "5/5",
+      "samples": [
+        {
+          "status_code": 200,
+          "body": {
+            "content_id": "2d9c519d14e4",
+            "message": "Thank you. Your appeal has been recorded and a person will review it. Until then, this result is marked as under review.",
+            "status": "under_review"
+          }
+        },
+        {
+          "status_code": 404,
+          "body": {
+            "error": "unknown_content_id",
+            "message": "No submission with content_id 'nope1ab88b'. Check the id and try again."
+          }
+        }
+      ]
+    }
+  ],
+  "criterion_5": [
+    {
+      "ok": "6/6",
+      "rows": [
+        {
+          "case": "missing text",
+          "status_code": 400,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "missing_text",
+            "message": "text is required and must be a non-empty string."
+          }
+        },
+        {
+          "case": "empty text",
+          "status_code": 400,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "missing_text",
+            "message": "text is required and must be a non-empty string."
+          }
+        },
+        {
+          "case": "whitespace text",
+          "status_code": 400,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "missing_text",
+            "message": "text is required and must be a non-empty string."
+          }
+        },
+        {
+          "case": "missing creator_id",
+          "status_code": 400,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "missing_creator_id",
+            "message": "creator_id is required and must be a non-empty string."
+          }
+        },
+        {
+          "case": "body is a list",
+          "status_code": 400,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "invalid_json",
+            "message": "Send a JSON object with text and creator_id."
+          }
+        },
+        {
+          "case": "50,000 chars",
+          "status_code": 413,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "text_too_long",
+            "message": "text is over 20000 characters. Send a shorter piece."
+          }
+        }
+      ]
+    },
+    {
+      "ok": "6/6",
+      "rows": [
+        {
+          "case": "missing text",
+          "status_code": 400,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "missing_text",
+            "message": "text is required and must be a non-empty string."
+          }
+        },
+        {
+          "case": "empty text",
+          "status_code": 400,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "missing_text",
+            "message": "text is required and must be a non-empty string."
+          }
+        },
+        {
+          "case": "whitespace text",
+          "status_code": 400,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "missing_text",
+            "message": "text is required and must be a non-empty string."
+          }
+        },
+        {
+          "case": "missing creator_id",
+          "status_code": 400,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "missing_creator_id",
+            "message": "creator_id is required and must be a non-empty string."
+          }
+        },
+        {
+          "case": "body is a list",
+          "status_code": 400,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "invalid_json",
+            "message": "Send a JSON object with text and creator_id."
+          }
+        },
+        {
+          "case": "50,000 chars",
+          "status_code": 413,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "text_too_long",
+            "message": "text is over 20000 characters. Send a shorter piece."
+          }
+        }
+      ]
+    },
+    {
+      "ok": "6/6",
+      "rows": [
+        {
+          "case": "missing text",
+          "status_code": 400,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "missing_text",
+            "message": "text is required and must be a non-empty string."
+          }
+        },
+        {
+          "case": "empty text",
+          "status_code": 400,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "missing_text",
+            "message": "text is required and must be a non-empty string."
+          }
+        },
+        {
+          "case": "whitespace text",
+          "status_code": 400,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "missing_text",
+            "message": "text is required and must be a non-empty string."
+          }
+        },
+        {
+          "case": "missing creator_id",
+          "status_code": 400,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "missing_creator_id",
+            "message": "creator_id is required and must be a non-empty string."
+          }
+        },
+        {
+          "case": "body is a list",
+          "status_code": 400,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "invalid_json",
+            "message": "Send a JSON object with text and creator_id."
+          }
+        },
+        {
+          "case": "50,000 chars",
+          "status_code": 413,
+          "json_error": true,
+          "logged_rejection": true,
+          "pass": true,
+          "body": {
+            "error": "text_too_long",
+            "message": "text is over 20000 characters. Send a shorter piece."
+          }
+        }
+      ]
+    }
+  ]
+}
