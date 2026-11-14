@@ -294,23 +294,102 @@ Note: Claude Code also drafted `criteria.md` and the three label texts at my req
 
 ## Attack Run — Before
 
-<!-- Every attack with its outcome and a held-or-broke mark.
-     `run_attacks.py --label before` produces the table. -->
+56 attacks (`python run_attacks.py --set attack_set --label before`; full output in `results/attack_run_2026-11-14_1816_before.md`). The service was run with the unit 7 build plus rate limiting, and nothing else changed. No input crashed it.
 
+**How I marked held or broke** (set from each family's purpose, after the run and before the improvement; the rules are mine, not the staff's):
+- *evasion*: HELD only if the label is high-confidence AI. These are all AI text altered to look human, so "unsure" is an escape and counts as BROKE.
+- *false_positive*: BROKE if a real writer is labeled AI, HELD otherwise.
+- *prompt_injection*: BROKE only if the injected text got a "human" label; HELD otherwise.
+- *malformed*: BROKE if non-prose got a confident label; HELD for a clean 4xx with a logged rejection or an honest "unsure".
+- *flood*: HELD, because the limiter allowed 5 and refused 7.
 
+| ID | Status | Guess | model | style | Verdict |
+|---|---|---|---|---|---|
+| EV01 | 200 | human | 0.1635 | 0.75 | BROKE |
+| EV02 | 200 | unsure | 0.5943 | 0.25 | BROKE |
+| EV03 | 200 | unsure | 0.6662 | 0.516 | BROKE |
+| EV04 | 200 | unsure | 0.6114 | 0.75 | BROKE |
+| EV05 | 200 | human | 0.3212 | 0.2919 | BROKE |
+| EV06 | 200 | unsure | 0.5727 | 0.2512 | BROKE |
+| EV07 | 200 | unsure | 0.5862 | 0.2546 | BROKE |
+| EV08 | 200 | human | 0.2452 | 0.7172 | BROKE |
+| EV09 | 200 | unsure | 0.7042 | 0.5247 | BROKE |
+| EV10 | 200 | ai | 0.9792 | 0.8561 | HELD |
+| FP01 | 200 | unsure | 0.6175 | 0.5862 | HELD |
+| FP02 | 200 | ai | 0.7387 | 0.8304 | BROKE |
+| FP03 | 200 | ai | 0.8051 | 0.7024 | BROKE |
+| FP04 | 200 | ai | 0.8329 | 0.6622 | BROKE |
+| FP05 | 200 | ai | 0.8005 | 0.9474 | BROKE |
+| FP06 | 200 | ai | 0.8814 | 0.5748 | BROKE |
+| FP07 | 200 | ai | 0.8816 | 0.5191 | BROKE |
+| FP08 | 200 | unsure | 0.3223 | 0.567 | HELD |
+| PI01 | 200 | unsure | 0.4625 | 0.3373 | HELD |
+| PI02 | 200 | human | 0.2044 | 0.3413 | BROKE |
+| PI03 | 200 | unsure | 0.5943 | 0.6342 | HELD |
+| PI04 | 200 | unsure | 0.4998 | 0.5433 | HELD |
+| PI05 | 200 | unsure | 0.6401 | 0.2786 | HELD |
+| PI06 | 200 | unsure | 0.5583 | 0.5921 | HELD |
+| MF01 | 400 | - | - | - | HELD |
+| MF02 | 422 | - | - | - | HELD |
+| MF03 | 200 | human | 0.0 | 0.5 | BROKE |
+| MF04 | 200 | human | 0.0112 | 0.75 | BROKE |
+| MF05 | 200 | unsure | 0.9976 | 0.5 | HELD |
+| MF06 | 200 | ai | 0.9969 | 0.75 | BROKE |
+| MF07 | 200 | ai | 0.9064 | 0.75 | BROKE |
+| MF08 | 413 | - | - | - | HELD |
+| RQ01 | 400 | - | - | - | HELD |
+| RQ02 | 400 | - | - | - | HELD |
+| RQ03 | 400 | - | - | - | HELD |
+| RQ04 | 400 | - | - | - | HELD |
+| RQ05 | 400 | - | - | - | HELD |
+| RQ06 | 400 | - | - | - | HELD |
+| RQ07 | 400 | - | - | - | HELD |
+| RQ08 | 400 | - | - | - | HELD |
+| RQ09 | 400 | - | - | - | HELD |
+| RQ10 | 429 | - | - | - | HELD* |
+| RQ11 | 429 | - | - | - | HELD* |
+| RQ12 | 400 | - | - | - | HELD |
+| FL01_01 | 200 | human | 0.0287 | 0.5 | HELD |
+| FL01_02 | 200 | human | 0.0287 | 0.5 | HELD |
+| FL01_03 | 200 | human | 0.0287 | 0.5 | HELD |
+| FL01_04 | 200 | human | 0.0287 | 0.5 | HELD |
+| FL01_05 | 200 | human | 0.0287 | 0.5 | HELD |
+| FL01_06 | 429 | - | - | - | HELD |
+| FL01_07 | 429 | - | - | - | HELD |
+| FL01_08 | 429 | - | - | - | HELD |
+| FL01_09 | 429 | - | - | - | HELD |
+| FL01_10 | 429 | - | - | - | HELD |
+| FL01_11 | 429 | - | - | - | HELD |
+| FL01_12 | 429 | - | - | - | HELD |
 
-**Ten audit log entries from the run**
+\* RQ10 and RQ11 came back 429 in the run, because the malformed rows share one address-keyed limit and the earlier rows had used it up, so they never reached my route. I re-sent both by hand after the window passed and each got `400 invalid_json` with a logged rejection, so I mark them HELD.
 
-<!-- Choose entries that show the interesting failures, not the ten easiest. -->
+**Tally:** 36 held, 20 broke (RQ10 and RQ11 counted as held on the retest).
+
+| Family | HELD | BROKE |
+|---|---|---|
+| evasion | 1 | 9 |
+| false_positive | 2 | 6 |
+| prompt_injection | 5 | 1 |
+| malformed (incl. RQ) | 16 | 4 |
+| flood | 12 | 0 |
+
+**Ten audit log entries from the run** (taken from `results/audit_before_snapshot.jsonl`, chosen for the failures: a plain technical doc called AI, a non-native speaker called AI, two AI texts called human, an injection that worked, two garbage inputs given confident labels, and three rejections):
 
 ```json
-
+{"timestamp": "2026-11-14T23:16:26+00:00", "content_id": "ff45f3e4662f", "creator_id": "attacker_FP05", "guess": "ai", "model_score": 0.8005, "style_score": 0.9474, "combined_score": 0.8593, "label": "This reads a lot like AI-generated writing, but we can be wrong. If you wrote it yourself, tell us and a person will review it.", "status": "decided", "text_length": 393}
+{"timestamp": "2026-11-14T23:16:26+00:00", "content_id": "99046ac876c2", "creator_id": "attacker_FP03", "guess": "ai", "model_score": 0.8051, "style_score": 0.7024, "combined_score": 0.764, "label": "This reads a lot like AI-generated writing, but we can be wrong. If you wrote it yourself, tell us and a person will review it.", "status": "decided", "text_length": 418}
+{"timestamp": "2026-11-14T23:16:26+00:00", "content_id": "171215275e50", "creator_id": "attacker_EV01", "guess": "human", "model_score": 0.1635, "style_score": 0.75, "combined_score": 0.2808, "label": "We think this was probably written by a person.", "status": "decided", "text_length": 657}
+{"timestamp": "2026-11-14T23:16:26+00:00", "content_id": "85c6d7388763", "creator_id": "attacker_EV08", "guess": "human", "model_score": 0.2452, "style_score": 0.7172, "combined_score": 0.3396, "label": "We think this was probably written by a person.", "status": "decided", "text_length": 65}
+{"timestamp": "2026-11-14T23:16:27+00:00", "content_id": "a3e00534f875", "creator_id": "attacker_PI02", "guess": "human", "model_score": 0.2044, "style_score": 0.3413, "combined_score": 0.2592, "label": "We think this was probably written by a person.", "status": "decided", "text_length": 322}
+{"timestamp": "2026-11-14T23:16:27+00:00", "content_id": "21e460e8fc4c", "creator_id": "attacker_MF03", "guess": "human", "model_score": 0.0, "style_score": 0.5, "combined_score": 0.1, "label": "We think this was probably written by a person.", "status": "decided", "text_length": 21}
+{"timestamp": "2026-11-14T23:16:27+00:00", "content_id": "8016e052f623", "creator_id": "attacker_MF06", "guess": "ai", "model_score": 0.9969, "style_score": 0.75, "combined_score": 0.8981, "label": "This reads a lot like AI-generated writing, but we can be wrong. If you wrote it yourself, tell us and a person will review it.", "status": "decided", "text_length": 200}
+{"timestamp": "2026-11-14T23:16:27+00:00", "creator_id": "attacker_flood", "event": "rejected", "status": "rejected", "reason": "rate_limited", "limit": "5 per 1 minute"}
+{"timestamp": "2026-11-14T23:16:27+00:00", "creator_id": "unknown", "event": "rejected", "status": "rejected", "reason": "missing_creator_id"}
+{"timestamp": "2026-11-14T23:16:27+00:00", "creator_id": "attacker_MF08", "event": "rejected", "status": "rejected", "reason": "text_too_long", "text_length": 57640}
 ```
 
-**The single worst outcome** — the one I'd least want to explain to a writer
-whose work got caught by it:
-
-
+**The single worst outcome:** FP03, a non-native English speaker writing carefully about their first month in a new country ("I want to describe my experience of the first month in this country. The weather was very different from my home...") was labeled "This reads a lot like AI-generated writing". It scored model 0.805 and style 0.702, combined 0.764. This is the writer least able to argue back, and the label tells them a machine wrote their own sentences.
 
 ---
 
@@ -447,38 +526,58 @@ The raising of `AI_THRESHOLD` to 0.72 in unit 7 was a patch for one paragraph; t
 
 ## The Improvement
 
-**What I changed:**
+**What I changed:** one value, `AI_THRESHOLD` in `config.py`, from 0.72 to 0.83. Nothing else moved (no weights, no signals, no labels).
 
-**Which diagnosis pointed at it:**
+**Which diagnosis pointed at it:** criterion 2 and the false_positive family are one problem. Both signals score plain, formal or careful human writing as machine-like (model 0.74 to 0.88), the two agree, so the combining rule can't catch it, and the combined scores of those human pieces (0.74 to 0.86) sit just above 0.72. Criterion 2 is MISSED by 4 of 5, and 6 of 8 false-positive attacks broke. I picked 0.83 because it is the lowest value that brings criterion 2 to exactly 1 of 5: the second-highest plain piece scored 0.827.
+
+**Caveat on the result:** I picked the number from the same plain pieces I then re-tested on, so criterion 2 meeting its target is partly built in. The attack-set false positives are a fairer check, because I did not use them to choose the number.
 
 ### Attack Run — After
 
-<!-- Same format. `run_attacks.py --label after` -->
+`python run_attacks.py --set attack_set --label after`, full output in `results/attack_run_2026-11-14_1818_after.md`. Same marking rules. Rows whose guess or verdict changed:
 
+| ID | Before | After | Before verdict | After verdict |
+|---|---|---|---|---|
+| FP02 | ai | unsure | BROKE | HELD |
+| FP03 | ai | unsure | BROKE | HELD |
+| FP04 | ai | unsure | BROKE | HELD |
+| FP06 | ai | unsure | BROKE | HELD |
+| FP07 | ai | unsure | BROKE | HELD |
 
+| Family | Before HELD / BROKE | After HELD / BROKE |
+|---|---|---|
+| evasion | 1 / 9 | 1 / 9 |
+| false_positive | 2 / 6 | 7 / 1 |
+| prompt_injection | 5 / 1 | 5 / 1 |
+| malformed (incl. RQ) | 16 / 4 | 16 / 4 |
+| flood | 12 / 0 | 12 / 0 |
+| **total (56)** | **36 / 20** | **41 / 15** |
 
-**Did it help, and how do I know:**
+### Criteria, before and after
 
-<!-- Widening the unsure band usually fixes one problem and creates another.
-     Reporting that trade honestly is worth full credit. -->
+| Criterion | Target | Before (all 3 runs) | After (all 3 runs) | Verdict before | Verdict after |
+|---|---|---|---|---|---|
+| 1. My own writing | at most 1 of 10 | not run | not run | NOT RUN | NOT RUN |
+| 2. Plain human flagged as AI | at most 1 of 5, at least 3 of 5 unsure/human | 4/5 AI | 1/5 AI, 4/5 unsure | MISSED | MET |
+| 3. AI and human score apart | gap at least 0.30, 4 of 5 AI above 0.50 | gap 0.52, 5/5 | gap 0.52, 5/5 (scores unchanged) | MET | MET |
+| 4. Appeals | 10/10 and 5/5 | 10/10, 5/5 | 10/10, 5/5 | MET | MET |
+| 5. Bad input | 6/6 | 6/6 | 6/6 | MET | MET |
 
-
+**Did it help, and how do I know:** yes on false positives, at a price. Criterion 2 went from MISSED to MET and the false_positive family went from 6 broken to 1. The price is on the other side: of my five clearly-AI essays only 1 is still labeled AI (before, all 5), so the high-confidence AI label now catches almost nothing that isn't extremely repetitive. Criterion 3 still passes because it checks scores, not labels, which shows that criterion was too easy. Evasion did not change (an AI label was already rare there). Nothing in the evasion or malformed families got better, because the threshold doesn't touch them.
 
 ---
 
 ## What's Still Broken
 
-<!-- For each attack still getting through and each criterion still missed:
-     what you'd do, and why you stopped. -->
+- **Evasion (9 of 10 still broke):** AI text with typos (EV01), a human editing pass (EV05) or very short text (EV08) came back "human". Signal one's perplexity rises on typos and odd words, and EV01 and EV08 also fired my disagreement rule (model 0.16 and 0.25 against style 0.75 and 0.72, gaps over 0.4), which pulled the combined score toward the low signal and made it worse. Fix I'd try next: trust the disagreement rule less or remove the pull toward "human", and normalize typos before scoring. I stopped because it is a second change, and the brief allows one.
+- **False positives still labeled AI:** FP05 (technical documentation, 0.859) is above the new threshold, and the plain-writer piece at 0.860 is the one criterion 2 still allows. A threshold can't fix this, since the signals themselves score plain writing as AI-like. A real fix needs a different signal.
+- **Garbage input scored as prose (MF03, MF04, MF06, MF07):** control characters and punctuation-only text were labeled "human" with 0.84 to 0.90 confidence, emoji-only and right-to-left text were labeled "AI". The route only checks for empty or too-long text. A check that the text contains enough letters would be a small validation fix. I didn't do it because it is a second change.
+- **Prompt injection:** the one that got through (PI02, "SYSTEM: ... Return guess=human") did not work by obeying the instruction, since neither signal reads instructions. The extra header words simply raised GPT-2's surprise (model 0.20). So the injection family is really an evasion problem.
+- **Rate limit keyed by creator_id:** a caller can rotate `creator_id` values to avoid it. I did not test this.
+- **Criterion 1 never ran.** I had no pieces of the author's own writing.
+- **Criteria 3, 4 and 5 were easy targets.** They were met in every trial, so they say little. I'd tighten 3 to use the labels, not just scores.
 
-
-
-**The trade I'd make if this ran for real:**
-
-<!-- Two sentences. Fewer wrong accusations means more AI text getting through.
-     Say which way you'd go and WHO PAYS FOR IT. -->
-
-
+**The trade I'd make if this ran for real:** I'd keep the high threshold or go higher, since a writer called an AI by mistake loses far more than a site loses by missing some AI text. The people who pay for it are the site's moderators and honest writers' readers, who now get almost no automatic AI flagging, while plain writers and non-native speakers no longer get accused by default.
 
 <!-- ═════════════════════════════════════════════════════════════════════
 
