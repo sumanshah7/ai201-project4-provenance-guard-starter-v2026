@@ -262,6 +262,12 @@ $ curl "http://127.0.0.1:5000/log?limit=4"
 - *What came back:* a formula that reported 0.988 confidence for an "unsure" result, which reads as being very sure about not knowing.
 - *What I changed:* replaced it with `max(combined, 1 - combined)`, which is the same for AI and human and stays near 0.5 for unsure.
 
+**Moment 3 (unit 8)**
+
+- *What I asked for:* Claude Code to run my five criteria three times and give a verdict on each.
+- *What came back:* criterion 2 missed, with 4 of 5 plain human pieces labeled AI in all three trials, and a diagnosis that both signals misread plain writing so my disagreement rule never fired.
+- *What I changed:* nothing yet. I held the fix until the attack set has been run, so the before and after can be compared.
+
 Note: Claude Code also drafted `criteria.md` and the three label texts at my request, after I told it to finish the remaining items. I based the numbers on the calibration results, but they are first drafts and I have not had anyone else read the labels.
 
 <!-- ═══════════════════════ UNIT 8 — THE TEST ═══════════════════════ -->
