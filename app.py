@@ -232,9 +232,8 @@ def submit():
     style_score = stylometry.style_signal(text)
     combined = round(scoring.combine_signals(model_score, style_score), 4)
     guess, label = scoring.score_to_label(combined)
-    # Confidence in the guess: how far the score sits from the opposite verdict.
-    confidence = round(combined if guess == "ai" else 1 - combined if guess == "human"
-                       else 1 - abs(combined - 0.5) * 2, 4)
+    # Confidence: how far the score leans either way. Near 0.5 means unsure.
+    confidence = round(max(combined, 1 - combined), 4)
 
     content_id = uuid.uuid4().hex[:12]
     audit.log_decision(
