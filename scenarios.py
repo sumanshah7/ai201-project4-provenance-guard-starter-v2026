@@ -5,12 +5,29 @@ What my test runs, one scenario per criterion in criteria.md. (Unit 8, Milestone
 Criteria 4 and 5 need things run_eval.py cannot express (an appeal after a
 submission; a request body that is a bare list), so `run_checks.py` runs those.
 
-Criterion 1 ("my own writing, at most 1 of 10 flagged") is NOT here yet: it
-needs ten pieces the author actually wrote, and none were available when this
-was set up. Add them as a scenario with "criterion": 1 and re-run.
+Criterion 1 ("my own writing, at most 1 of 10 flagged") is run here with TEN
+STAND-IN PIECES that Claude Code drafted at the author's request. They are NOT
+the author's own writing, so this is a weaker test than the criterion asks for.
+Replace them with real pieces and re-run for a true result.
 """
 
 SCENARIOS = [
+    {
+        "name": "stand-in own writing",
+        "criterion": 1,
+        "texts": [
+            "I should have called her back on Sunday. Instead I cleaned the whole kitchen, including the oven, which I have not touched since March, and by the time I looked at my phone it was too late to ring anyone. Typical. I'll do it tomorrow, I told myself, and we both know how that goes.",
+            "The bus was late again so I walked, and about halfway there it started to rain, the sideways kind that finds the gap between your collar and your neck. I got to the office looking like I'd been dropped in a canal. Nobody said anything. Kind, or just tired.",
+            "My cousin Rohan thinks he can fix anything with duct tape and confidence. Last week it was the shed door. The week before, a bike. The shed door is now permanently open and the bike has one gear. He remains unbothered, which is honestly the best thing about him.",
+            "We moved to the coast when I was nine. I remember the smell of the new house, damp paint and salt, and my mother standing in the empty living room saying nothing for a very long time. I didn't understand it then. I think I do now.",
+            "Exam results come out on Thursday and I'm trying very hard not to think about it. I've reorganised my bookshelf twice. Mum keeps asking if I want tea. Tea will not change the numbers, Mum, but yes, I'll have one.",
+            "The recipe says forty minutes. It lies. In my oven it takes an hour and ten, and even then the middle is a bit sad. I've started just turning the heat down and walking away, reading, ignoring it. It comes out fine. Cooking is mostly patience dressed as skill.",
+            "Priya's wedding was loud, long and wonderful. Somebody's uncle gave a speech that went on for twenty minutes and ended with a song. Nobody left. At two in the morning we were still dancing in the car park because the hall had closed on us.",
+            "I keep a notebook of overheard sentences. 'He's not a bad dog, he's just very loud.' 'That's not what the manual said.' 'I told you, it's a different kind of tired.' None of them mean anything alone. Together they feel like a town talking in its sleep.",
+            "My first job was stacking shelves at a garden centre. Eight pounds an hour, a green apron two sizes too big, and a manager called Doreen who knew the Latin name of every plant and none of our surnames. I learned to lift properly. That's about it.",
+            "Football on Saturday, we lost four-one, and I scored the one, an accident off my shin. Dev still says it counts as skill. The pub afterwards was better than the match. We always say we'll train properly next week, and next week we never do.",
+        ],
+    },
     {
         # Criterion 2: at most 1 of 5 plain human pieces labeled AI, and at
         # least 3 of 5 labeled "unsure" or "human".

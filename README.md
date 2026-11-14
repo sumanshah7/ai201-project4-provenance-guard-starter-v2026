@@ -399,7 +399,7 @@ Run before any change to the service, three trials each (`run_eval.py --label be
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1. My own writing flagged as AI | at most 1 of 10 | not run | not run | not run | NOT RUN |
+| 1. My own writing flagged as AI (stand-in pieces, see note) | at most 1 of 10 | 0/10 | 0/10 | 0/10 | MET on stand-ins |
 | 2. Plain human writing flagged as AI | at most 1 of 5, and at least 3 of 5 "unsure" or "human" | 4/5 flagged AI | 4/5 flagged AI | 4/5 flagged AI | MISSED |
 | 3. AI and human score apart | gap of at least 0.30, and at least 4 of 5 AI above 0.50 | gap 0.52, 5/5 | gap 0.52, 5/5 | gap 0.52, 5/5 | MET |
 | 4. Appeals change status and are logged | 10/10 valid, 5/5 unknown get 404 | 10/10, 5/5 | 10/10, 5/5 | 10/10, 5/5 | MET |
@@ -407,7 +407,7 @@ Run before any change to the service, three trials each (`run_eval.py --label be
 
 All three trials were identical for every criterion, which is expected: GPT-2 and the style measures are deterministic.
 
-**Criterion 1 is not run.** It needs ten pieces the author actually wrote, and none were supplied. It is a gap in this run log, not a pass.
+**Criterion 1 note, important.** The criterion asks for ten pieces I wrote myself. I did not have those, so the ten pieces in `scenarios.py` ("stand-in own writing") were drafted by Claude Code at my request. They are casual first-person human-style paragraphs, not my own writing, so this is a weaker test than the criterion asks for and the MET is provisional. I ran it on the final build (`results/` file labeled `after_with_c1`); the highest combined score was 0.55, so it would also have passed under the earlier 0.72 threshold (0 of 10 flagged either way, all three trials identical). Replace the pieces with real writing and re-run `python run_eval.py` for a true result.
 
 **Criterion 2 verdict, MISSED.** Run 1 gave combined scores 0.668, 0.793, 0.827, 0.860 and 0.739 against the 0.72 AI threshold, so 4 of 5 crossed it; runs 2 and 3 were identical. Only 1 of 5 landed in "unsure" and none in "human", so both halves of the target fail. This is not a close call.
 
@@ -557,7 +557,7 @@ The raising of `AI_THRESHOLD` to 0.72 in unit 7 was a patch for one paragraph; t
 
 | Criterion | Target | Before (all 3 runs) | After (all 3 runs) | Verdict before | Verdict after |
 |---|---|---|---|---|---|
-| 1. My own writing | at most 1 of 10 | not run | not run | NOT RUN | NOT RUN |
+| 1. My own writing (stand-ins) | at most 1 of 10 | 0/10 (computed at 0.72) | 0/10 | MET on stand-ins | MET on stand-ins |
 | 2. Plain human flagged as AI | at most 1 of 5, at least 3 of 5 unsure/human | 4/5 AI | 1/5 AI, 4/5 unsure | MISSED | MET |
 | 3. AI and human score apart | gap at least 0.30, 4 of 5 AI above 0.50 | gap 0.52, 5/5 | gap 0.52, 5/5 (scores unchanged) | MET | MET |
 | 4. Appeals | 10/10 and 5/5 | 10/10, 5/5 | 10/10, 5/5 | MET | MET |
@@ -574,7 +574,7 @@ The raising of `AI_THRESHOLD` to 0.72 in unit 7 was a patch for one paragraph; t
 - **Garbage input scored as prose (MF03, MF04, MF06, MF07):** control characters and punctuation-only text were labeled "human" with 0.84 to 0.90 confidence, emoji-only and right-to-left text were labeled "AI". The route only checks for empty or too-long text. A check that the text contains enough letters would be a small validation fix. I didn't do it because it is a second change.
 - **Prompt injection:** the one that got through (PI02, "SYSTEM: ... Return guess=human") did not work by obeying the instruction, since neither signal reads instructions. The extra header words simply raised GPT-2's surprise (model 0.20). So the injection family is really an evasion problem.
 - **Rate limit keyed by creator_id:** a caller can rotate `creator_id` values to avoid it. I did not test this.
-- **Criterion 1 never ran.** I had no pieces of the author's own writing.
+- **Criterion 1 ran only on stand-ins.** Claude drafted the ten pieces, not the author, so the 0 of 10 result is not evidence about the author's real writing. The score ceiling (0.55) also suggests casual first-person prose is the easy case; it says nothing about plain or formal writers.
 - **Criteria 3, 4 and 5 were easy targets.** They were met in every trial, so they say little. I'd tighten 3 to use the labels, not just scores.
 
 **The trade I'd make if this ran for real:** I'd keep the high threshold or go higher, since a writer called an AI by mistake loses far more than a site loses by missing some AI text. The people who pay for it are the site's moderators and honest writers' readers, who now get almost no automatic AI flagging, while plain writers and non-native speakers no longer get accused by default.
