@@ -252,15 +252,17 @@ $ curl "http://127.0.0.1:5000/log?limit=4"
 
 **Moment 1**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* Claude Code to build the whole unit: `/submit`, `/appeal`, the style signal, the combining rule and the labels, working from the project brief.
+- *What came back:* working routes plus a calibration table of six test inputs, which showed that my plain human paragraph scored 0.668 and would be labeled AI at the starter's 0.65 threshold.
+- *What I changed:* I raised `AI_THRESHOLD` from 0.65 to 0.72 so that paragraph lands in "unsure", and accepted that lightly-edited AI text now slips through.
 
 **Moment 2**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* a first version of the response fields, including `confidence`.
+- *What came back:* a formula that reported 0.988 confidence for an "unsure" result, which reads as being very sure about not knowing.
+- *What I changed:* replaced it with `max(combined, 1 - combined)`, which is the same for AI and human and stays near 0.5 for unsure.
+
+Note: Claude Code also drafted `criteria.md` and the three label texts at my request, after I told it to finish the remaining items. I based the numbers on the calibration results, but they are first drafts and I have not had anyone else read the labels.
 
 <!-- ═══════════════════════ UNIT 8 — THE TEST ═══════════════════════ -->
 

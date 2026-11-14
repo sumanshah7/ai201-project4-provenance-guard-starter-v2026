@@ -42,63 +42,43 @@ Two things worth knowing before you pick numbers:
   a **miss**.
 
 ---
-## 1.
+## 1. Few real writers are called AI
 
-<!-- Your criterion. It must name a number. -->
+Of 10 pieces of my own writing (varied length and tone), at most 1 is labeled high-confidence AI (combined score 0.72 or above). This must hold in each of 3 repeated runs.
 
-
-
-**Why this target:**
-
-
+**Why this target:** on a writing site a wrong accusation costs the writer far more than a missed detection costs the site. One in 10 is still a lot, but with only two weak local signals I can't honestly promise zero, and a stricter target I could never check with 10 samples is not a target.
 
 ---
 
-## 2.
+## 2. Plain writers are not singled out
 
-<!-- Your criterion. -->
+Of 5 plainly written human pieces (short sentences, common words, the style of a second-language or younger writer), at most 1 is labeled high-confidence AI, and at least 3 of the 5 are labeled "unsure" or "human".
 
-
-
-**Why this target:**
-
-
+**Why this target:** the model signal's known blind spot is plain, predictable human writing, and it scored my plain paragraph 0.79, close to my clearly-AI text. This group has the least room to argue back, so it gets its own number rather than hiding inside the average in criterion 1.
 
 ---
 
-## 3.
+## 3. Clearly-AI and clearly-human text score far apart
 
-<!-- Your criterion. -->
+Using 5 clearly-AI pieces and 5 clearly-human pieces, the average combined score of the AI group is at least 0.30 higher than the human group, and at least 4 of the 5 AI pieces score above 0.50.
 
-
-
-**Why this target:**
-
-
+**Why this target:** if the groups sit within 0.30 of each other, the thresholds are just noise. My first calibration gave 0.77 for AI and 0.32 for human (a gap of about 0.45), so 0.30 leaves room for variation without being trivial.
 
 ---
 
-## 4.
+## 4. Every appeal changes status and is recorded
 
-<!-- Your criterion. -->
+For 10 appeals sent with valid content ids, all 10 return `status: "under_review"` and each adds exactly one `appeal` entry to `logs/audit.jsonl` next to the original decision. For 5 appeals with unknown ids, all 5 return a 404 and add no entry.
 
-
-
-**Why this target:**
-
-
+**Why this target:** the appeal is the only thing standing between a wrong label and nothing at all, so it has to work every time, not most of the time. This is fully deterministic, so the target is 100%.
 
 ---
 
-## 5.
+## 5. Bad input never crashes the service
 
-<!-- Your criterion. -->
+For 6 bad inputs (missing `text`, empty `text`, whitespace-only `text`, missing `creator_id`, a body that is not a JSON object, and 50,000 characters of text), every one returns a 4xx with a JSON error, none returns a 500, and each leaves a `rejected` entry in the audit log.
 
-
-
-**Why this target:**
-
-
+**Why this target:** a crash on malformed input is one of the most common real failures, and a rejection that leaves no trace looks like a quiet afternoon. Six cases cover each way the route can be fed something it cannot score.
 
 ---
 
