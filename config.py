@@ -47,6 +47,12 @@ DETECTOR_MODEL = os.getenv("AI201_DETECTOR_MODEL", "gpt2")
 DETECTOR_MAX_TOKENS = 400
 
 
+# Longest text /submit accepts. The detector only reads the first
+# DETECTOR_MAX_TOKENS anyway, so anything past this is refused rather than
+# silently ignored.
+MAX_TEXT_CHARS = 20000
+
+
 # ─── Scoring (Milestone 4) ───────────────────────────────────────────────────
 # How much each signal counts toward the combined score.
 #
@@ -54,8 +60,12 @@ DETECTOR_MAX_TOKENS = 400
 # down BEFORE you code it, and to put the numbers in your README. Whatever you
 # decide, it goes here.
 
-WEIGHT_MODEL_SIGNAL = 0.5
-WEIGHT_STYLE_SIGNAL = 0.5
+WEIGHT_MODEL_SIGNAL = 0.6
+WEIGHT_STYLE_SIGNAL = 0.4
+
+# If the two signals differ by more than this, the combined score is pulled
+# toward the more-human one (see scoring.py::combine_signals).
+DISAGREEMENT_GAP = 0.4
 
 
 # ─── Thresholds (Milestone 5) ────────────────────────────────────────────────
